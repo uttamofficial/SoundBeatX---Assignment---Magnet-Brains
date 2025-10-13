@@ -228,16 +228,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #fef3c7; /* light yellow track */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #8b5cf6, #a855f7);
+  background: linear-gradient(180deg, #dc2626, #f59e0b); /* red to yellow gradient */
   border-radius: 0.3125rem; /* 5px -> rem */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #7c3aed, #9333ea);
+  background: linear-gradient(180deg, #b91c1c, #d97706); /* darker red to orange */
 }
 
 /* Selection Color */

@@ -14,7 +14,6 @@ export function Link({ children, href, className = '', ...props }: LinkProps) {
           ? 'text-red-700 bg-white/80 border-b-2 border-red-600'
           : 'text-gray-700 hover:text-red-700 hover:bg-white/80'
       } ${className}`}
-      preventScrollReset={true}
       {...props}
     >
       {children}
