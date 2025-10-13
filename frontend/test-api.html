@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button id="fetchProducts">Fetch Products</button>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('fetchProducts').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/products');
+                const products = await response.json();
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(products, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<p>Error: ' + error.message + '</p>';
+            }
+        });
+    </script>
+</body>
+</html>
