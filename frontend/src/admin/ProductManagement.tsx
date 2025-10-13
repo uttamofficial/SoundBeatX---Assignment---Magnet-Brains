@@ -20,7 +20,8 @@ interface Pagination {
 }
 
 const ProductManagement: React.FC = () => {
-  const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5010';
+  const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+  const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

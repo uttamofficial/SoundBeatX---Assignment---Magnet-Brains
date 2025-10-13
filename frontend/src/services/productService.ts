@@ -1,6 +1,8 @@
 import { Product } from '../types';
 import { products as mockProducts } from '../data/products';
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5010';
+// Prefer a runtime-injected env (window.__env) so we can change endpoints without rebuilding.
+const runtimeApiUrl = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+const BASE_URL = runtimeApiUrl || import.meta.env.VITE_API_URL || 'http://localhost:5010';
 
 export const productService = {
   // Get all products

@@ -28,7 +28,8 @@ function GadgetsPage() {
       try {
         setLoading(true);
         setError(null);
-  const API = import.meta.env.VITE_API_URL || 'http://localhost:5010';
+  const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+        const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
         const response = await fetch(`${API}/api/products`);
         if (response.ok) {
           const fetchedProducts = await response.json();

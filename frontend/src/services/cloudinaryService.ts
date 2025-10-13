@@ -1,6 +1,7 @@
 import cloudinaryConfig from '../config/cloudinary';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5010';
+const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+const API_URL = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
 
 class CloudinaryService {
   // Upload a file directly to Cloudinary from the frontend

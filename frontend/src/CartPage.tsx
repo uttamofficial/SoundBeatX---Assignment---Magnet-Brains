@@ -78,7 +78,9 @@ const CartPage = () => {
     try {
       if (paymentMethod === 'Online') {
         // Create Stripe Checkout Session
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/create-checkout-session`, {
+  const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+  const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
+  const response = await fetch(`${API}/api/orders/create-checkout-session`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -119,7 +121,9 @@ const CartPage = () => {
           paymentMethod: 'COD',
         };
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/create`, {
+  const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+  const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
+  const response = await fetch(`${API}/api/orders/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -21,7 +21,8 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5010';
+  const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+  const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
     const fetchStats = async () => {
       try {
         // Fetch product stats

@@ -14,7 +14,9 @@ const AdminLogin: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/auth/login`, {
+  const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
+  const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
+  const response = await fetch(`${API}/api/admin/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

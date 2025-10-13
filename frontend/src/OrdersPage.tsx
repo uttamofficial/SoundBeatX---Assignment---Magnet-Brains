@@ -19,7 +19,7 @@ function OrdersPage() {
   const fetchOrders = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/orders/user/${user?.id}`
+  `${(typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL) || import.meta.env.VITE_API_URL || 'http://localhost:5010'}/api/orders/user/${user?.id}`
       );
       const data = await response.json();
       setOrders(data.orders);
