@@ -5,11 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import StripePaymentForm from './components/StripePaymentForm';
 import Footer from './components/Footer';
 
-const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-if (!stripePublishableKey) {
-  throw new Error('VITE_STRIPE_PUBLISHABLE_KEY is not defined');
-}
-const stripePromise = loadStripe(stripePublishableKey);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function PaymentPage() {
   const navigate = useNavigate();

@@ -1,6 +1,5 @@
 // App.tsx (Main Application)
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useEffect } from 'react';
 import LandingPage from './LandingPage';  // Import the Landing Page component
 import GadgetsPage from './GadgetsPage';  // Import the Gadgets Page component
 import ContactUs from './ContactUs';  // Import the Contact Us component
@@ -14,7 +13,6 @@ import OrdersPage from './OrdersPage';
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { RouteLoader } from './components/RouteLoader';
 import DualClerkProvider from './components/DualClerkProvider';
-import ScrollManager from './components/ScrollManager';
 
 // Admin Components
 import AdminLogin from './AdminLogin';
@@ -38,15 +36,9 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  useEffect(() => {
-    // Prevent automatic scroll to top on route navigation
-    window.history.scrollRestoration = 'manual';
-  }, []);
-
   return (
     <Router>
       <DualClerkProvider>
-        <ScrollManager />
         <RouteLoader />
         <Routes>
         {/* Public Routes */}
