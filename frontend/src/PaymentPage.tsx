@@ -25,7 +25,7 @@ function PaymentPage() {
     // Create payment intent
     const createPaymentIntent = async () => {
       try {
-        const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5010';
+  const API = import.meta.env.VITE_API_URL || 'http://localhost:5010';
         const response = await fetch(
           `${API}/api/orders/create-payment-intent`,
           {

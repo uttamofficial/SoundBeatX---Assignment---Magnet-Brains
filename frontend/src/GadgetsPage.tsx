@@ -28,7 +28,7 @@ function GadgetsPage() {
       try {
         setLoading(true);
         setError(null);
-        const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5010';
+  const API = import.meta.env.VITE_API_URL || 'http://localhost:5010';
         const response = await fetch(`${API}/api/products`);
         if (response.ok) {
           const fetchedProducts = await response.json();
