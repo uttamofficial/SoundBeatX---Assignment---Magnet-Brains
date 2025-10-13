@@ -14,6 +14,7 @@ import OrdersPage from './OrdersPage';
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import { RouteLoader } from './components/RouteLoader';
 import DualClerkProvider from './components/DualClerkProvider';
+import ScrollManager from './components/ScrollManager';
 
 // Admin Components
 import AdminLogin from './AdminLogin';
@@ -45,6 +46,7 @@ function App() {
   return (
     <Router>
       <DualClerkProvider>
+        <ScrollManager />
         <RouteLoader />
         <Routes>
         {/* Public Routes */}
