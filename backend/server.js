@@ -14,11 +14,36 @@ const app = express();
 const PORT = process.env.PORT || 5010;
 
 // Configure CORS with specific origins
+// Supports a single FRONTEND_URL or comma-separated FRONTEND_URLS in environment
+const defaultLocalOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+let allowedOrigins = [...defaultLocalOrigins];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+if (process.env.FRONTEND_URLS) {
+  const extras = process.env.FRONTEND_URLS.split(',').map(s => s.trim()).filter(Boolean);
+  allowedOrigins = allowedOrigins.concat(extras);
+}
+
+// de-duplicate and remove falsy
+allowedOrigins = Array.from(new Set(allowedOrigins)).filter(Boolean);
+
+if (process.env.NODE_ENV === 'production' && !allowedOrigins.some(o => o.startsWith('http'))) {
+  console.warn('⚠️ No FRONTEND_URL or FRONTEND_URLS configured for production. Set FRONTEND_URL to your deployed frontend origin.');
+}
+
 const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: function (origin, callback) {
+    // allow requests with no origin like mobile apps or curl
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg + ' Origin: ' + origin));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-requested-with']
