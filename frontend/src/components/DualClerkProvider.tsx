@@ -43,8 +43,8 @@ export default function DualClerkProvider({ children }: DualClerkProviderProps) 
         afterSignOutUrl: '/',
         signInUrl: '/sign-in',
         signUpUrl: '/sign-up',
-        afterSignInUrl: '/dashboard',
-        afterSignUpUrl: '/dashboard',
+        afterSignInUrl: '/',
+        afterSignUpUrl: '/',
       };
 
   return (

@@ -5,8 +5,15 @@ const Product = require('../models/Product');
 // Get all products
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find({}).sort({ created_at: -1 });
-    res.json(products);
+    const products = await Product.find({}).sort({ created_at: -1 }).lean();
+    
+    // Transform _id to id for frontend compatibility
+    const transformedProducts = products.map(product => ({
+      ...product,
+      id: product._id
+    }));
+    
+    res.json(transformedProducts);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -23,12 +30,18 @@ router.get('/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid product ID format' });
     }
     
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).lean();
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
     
-    res.json(product);
+    // Transform _id to id for frontend compatibility
+    const transformedProduct = {
+      ...product,
+      id: product._id
+    };
+    
+    res.json(transformedProduct);
   } catch (error) {
     console.error('Error fetching product:', error);
     res.status(500).json({ error: 'Failed to fetch product' });

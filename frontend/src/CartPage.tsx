@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { useCart } from './components/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { ShippingAddress } from './types';
 
@@ -27,6 +27,37 @@ const CartPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'Online'>('COD');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<Partial<ShippingAddress>>({});
+
+  // Migrate old cart items that have _id but not id
+  useEffect(() => {
+    const migrateCart = () => {
+      const cartData = localStorage.getItem('shopping-cart');
+      if (cartData) {
+        try {
+          const cartItems = JSON.parse(cartData);
+          let needsMigration = false;
+          
+          const migratedItems = cartItems.map((item: any) => {
+            if (!item.id && item._id) {
+              needsMigration = true;
+              return { ...item, id: item._id };
+            }
+            return item;
+          });
+          
+          if (needsMigration) {
+            console.log('Migrating cart items to include id field');
+            localStorage.setItem('shopping-cart', JSON.stringify(migratedItems));
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error('Error migrating cart:', error);
+        }
+      }
+    };
+    
+    migrateCart();
+  }, []);
 
   const handleQuantityChange = (id: number, newQuantity: number) => {
     updateQuantity(id, newQuantity);
@@ -105,15 +136,40 @@ const CartPage = () => {
         // Redirect to Stripe Checkout
         window.location.href = url;
       } else {
+        console.log('Cart items before mapping:', cart);
         const orderData = {
           userId: user?.id || 'guest',
-          items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-          })),
+          items: cart.map(item => {
+            console.log('Mapping cart item:', item);
+            // Use _id as fallback if id is not present (for old cart items)
+            // Handle both string and ObjectId formats
+            let itemId: any = item.id;
+            if (!itemId) {
+              const anyItem = item as any;
+              itemId = anyItem._id || anyItem.id;
+              // If _id is an object, convert to string
+              if (itemId && typeof itemId === 'object' && itemId.$oid) {
+                itemId = itemId.$oid;
+              }
+            }
+            
+            console.log('Item ID resolved to:', itemId);
+            
+            if (!itemId) {
+              console.error('Cart item missing ID - item:', JSON.stringify(item));
+              // Use a fallback - item name + price as a temp ID
+              itemId = `temp-${item.name}-${item.price}`.replace(/\s+/g, '-');
+              console.warn('Using fallback ID:', itemId);
+            }
+            
+            return {
+              id: itemId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+            };
+          }),
           shippingAddress,
           subtotal,
           shipping,
@@ -121,6 +177,7 @@ const CartPage = () => {
           paymentMethod: 'COD',
         };
 
+  console.log('Sending order data:', JSON.stringify(orderData, null, 2));
   const runtimeApi = typeof window !== 'undefined' && (window as any).__env?.VITE_API_URL;
   const API = runtimeApi || import.meta.env.VITE_API_URL || 'http://localhost:5010';
   const response = await fetch(`${API}/api/orders/create`, {
@@ -132,7 +189,9 @@ const CartPage = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create order');
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Order creation failed:', errorData);
+          throw new Error(errorData.error || 'Failed to create order');
         }
 
         const result = await response.json();
@@ -141,7 +200,8 @@ const CartPage = () => {
       }
     } catch (error) {
       console.error('Error processing order:', error);
-      alert('Failed to process order. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process order';
+      alert(`Failed to process order: ${errorMessage}. Please check the console for details.`);
     } finally {
       setIsProcessing(false);
     }
@@ -217,19 +277,31 @@ const CartPage = () => {
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-500">
               Shopping Cart
             </h1>
-            <span className="text-gray-600 font-semibold">{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  if (window.confirm('Clear all items from cart?')) {
+                    clearCart();
+                  }
+                }}
+                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
+              >
+                Clear Cart
+              </button>
+              <span className="text-gray-600 font-semibold">{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
+            </div>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Cart Items */}
             <div className="lg:w-2/3">
               <div className="bg-white rounded-2xl shadow-xl p-6 space-y-4 border border-red-200">
-                {cart.map(item => {
+                {cart.map((item, index) => {
                   const isPrintJob = item.name.includes('Print Job');
                   
                   return (
                     <div
-                      key={item.id}
+                      key={`cart-item-${item.id}-${index}`}
                       className="p-3 sm:p-4 rounded-xl bg-gradient-to-r from-red-50 to-yellow-50 hover:from-yellow-50 hover:to-orange-50 transition-all border border-red-200"
                     >
                       {/* First Row: Image and Product Details */}
@@ -251,7 +323,7 @@ const CartPage = () => {
                         {/* Product Details - Name and Badge */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            {isPrintJob && <FileText size={16} className="text-red-600 flex-shrink-0" />}
+                            {isPrintJob && <FileText key="icon" size={16} className="text-red-600 flex-shrink-0" />}
                             <h3 className="text-sm sm:text-base font-bold text-gray-800 truncate">{item.name}</h3>
                           </div>
                           {isPrintJob && (
@@ -582,10 +654,10 @@ const CartPage = () => {
                 </h2>
                 
                 <div className="space-y-4 mb-6 max-h-96 overflow-y-auto pr-2">
-                  {cart.map((item) => {
+                  {cart.map((item, index) => {
                     const isPrintJob = item.name.includes('Print Job');
                     return (
-                      <div key={item.id} className="p-3 rounded-xl bg-gradient-to-r from-red-50 to-yellow-50 border border-red-200">
+                      <div key={`checkout-item-${item.id}-${index}`} className="p-3 rounded-xl bg-gradient-to-r from-red-50 to-yellow-50 border border-red-200">
                         {/* Product Image and Name */}
                         <div className="flex gap-3 mb-3">
                           <div className="relative">

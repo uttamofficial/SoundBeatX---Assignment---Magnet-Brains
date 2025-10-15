@@ -8,21 +8,31 @@ const Admin = require('../models/Admin');
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    console.log('=== Admin Login Attempt ===');
+    console.log('Email:', email);
 
     // Find admin by email
     const admin = await Admin.findOne({ email: email.toLowerCase() });
     if (!admin) {
+      console.log('❌ Admin not found for email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+    
+    console.log('✅ Admin found:', admin.email);
 
     // Check if admin is active
     if (!admin.is_active) {
+      console.log('❌ Admin account is deactivated');
       return res.status(401).json({ error: 'Account is deactivated' });
     }
 
     // Check password
     const isPasswordValid = await admin.comparePassword(password);
+    console.log('Password valid:', isPasswordValid);
+    
     if (!isPasswordValid) {
+      console.log('❌ Invalid password');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -40,6 +50,8 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET || 'admin_secret_key',
       { expiresIn: '24h' }
     );
+    
+    console.log('✅ Login successful for:', admin.email);
 
     res.json({
       success: true,
